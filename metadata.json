@@ -1,0 +1,5 @@
+{
+  "name": "Chic Souq Products",
+  "description": "An application to automate the enrichment of e-commerce beauty product listings. It uses AI to source data, standardizes values for consistency, provides previews for edits, and exports to CSV formats for platforms like WooCommerce.",
+  "requestFramePermissions": []
+}
