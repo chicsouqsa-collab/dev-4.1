@@ -24,11 +24,11 @@ const parseGeminiError = (error: any): string => {
 };
 
 
-// FIX: Update testApiKey to use process.env.API_KEY per Gemini API guidelines.
+// FIX: Update testApiKey to use import.meta.env.VITE_API_KEY for Vite compatibility.
 export const testApiKey = async (): Promise<{ ok: boolean; message: string }> => {
-    const apiKey = process.env.API_KEY;
+    const apiKey = import.meta.env.VITE_API_KEY;
     if (!apiKey) {
-        return { ok: false, message: 'API_KEY environment variable not set.' };
+        return { ok: false, message: 'VITE_API_KEY environment variable not set.' };
     }
     try {
         const ai = new GoogleGenAI({ apiKey });
@@ -79,12 +79,13 @@ const buildPrompt = (product: BaseProduct, settings: AppSettings): string => {
 };
 
 
-// FIX: Update enrichProductWithGemini to use process.env.API_KEY per Gemini API guidelines.
+// FIX: Update enrichProductWithGemini to use import.meta.env.VITE_API_KEY for Vite compatibility.
 export const enrichProductWithGemini = async (product: BaseProduct, settings: AppSettings): Promise<Omit<EnrichedProduct, 'id' | 'status'>> => {
-    if (!process.env.API_KEY) {
-        throw new Error("Gemini API Key is not configured in environment variables.");
+    const apiKey = import.meta.env.VITE_API_KEY;
+    if (!apiKey) {
+        throw new Error("Gemini API Key is not configured. Set VITE_API_KEY in your environment variables.");
     }
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey });
     const prompt = buildPrompt(product, settings);
 
     const responseSchema = {
@@ -129,7 +130,7 @@ export const enrichProductWithGemini = async (product: BaseProduct, settings: Ap
             },
         });
 
-        const jsonString = response.text.trim();
+        const jsonString = (response.text ?? '').trim();
         const enrichedData = JSON.parse(jsonString);
         
         // Ensure all keys are present, even if AI omits them

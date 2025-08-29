@@ -41,14 +41,31 @@ const SettingsPage: React.FC = () => {
     <div className="space-y-8">
       <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
 
-      {/* FIX: API Key Management UI updated to reflect usage of environment variables. */}
       <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
         <h2 className="text-2xl font-semibold mb-4">Gemini API Key</h2>
-        <p className="mb-4 text-gray-600 dark:text-gray-300">The Gemini API key is configured via the <code>VITE_API_KEY</code> environment variable.</p>
-        <button onClick={handleTestApiKey} className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Test Connection</button>
-        {apiKeyStatus && (
-          <p className={`mt-2 text-sm ${apiKeyStatus.ok ? 'text-green-600' : 'text-red-500'}`}>{apiKeyStatus.message}</p>
-        )}
+        <p className="mb-2 text-gray-600 dark:text-gray-300">
+            For security, the Gemini API key must be configured as an environment variable, not entered in the UI.
+        </p>
+        <div className="bg-gray-100 dark:bg-gray-900 p-4 rounded-lg">
+            <p className="text-sm text-gray-700 dark:text-gray-200 mb-2">
+                For local development, create a file named <code className="font-mono text-sm bg-gray-200 dark:bg-gray-700 p-1 rounded">.env.local</code> in the project's root directory.
+            </p>
+            <p className="text-sm text-gray-700 dark:text-gray-200">
+                Add your API key to this file:
+            </p>
+            <pre className="mt-2 bg-gray-200 dark:bg-gray-700 p-3 rounded-md text-sm text-gray-800 dark:text-gray-100 overflow-x-auto">
+                <code>VITE_API_KEY="your-api-key-goes-here"</code>
+            </pre>
+            <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+                After creating the file, you'll need to restart the development server for the change to take effect. For production deployments, this variable should be set in your hosting provider's settings.
+            </p>
+        </div>
+        <div className="mt-4">
+            <button onClick={handleTestApiKey} className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Test Connection</button>
+            {apiKeyStatus && (
+              <p className={`mt-2 text-sm ${apiKeyStatus.ok ? 'text-green-600' : 'text-red-500'}`}>{apiKeyStatus.message}</p>
+            )}
+        </div>
       </div>
 
       {/* Dynamic AI Instructions */}
