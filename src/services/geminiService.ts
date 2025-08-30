@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { BaseProduct, AppSettings, EnrichedProduct } from '../types';
 
@@ -24,11 +25,10 @@ const parseGeminiError = (error: any): string => {
 };
 
 
-// FIX: Update testApiKey to use import.meta.env.VITE_API_KEY for Vite compatibility.
 export const testApiKey = async (): Promise<{ ok: boolean; message: string }> => {
-    const apiKey = import.meta.env.VITE_API_KEY;
+    const apiKey = process.env.API_KEY;
     if (!apiKey) {
-        return { ok: false, message: 'VITE_API_KEY environment variable not set.' };
+        return { ok: false, message: 'API_KEY environment variable not set.' };
     }
     try {
         const ai = new GoogleGenAI({ apiKey });
@@ -40,7 +40,6 @@ export const testApiKey = async (): Promise<{ ok: boolean; message: string }> =>
         return { ok: true, message: 'API Key is valid.' };
     } catch (error: any) {
         console.error("Gemini API Key Test Failed:", error);
-        // FIX: Parse the error to provide a cleaner, more specific message to the user.
         const message = parseGeminiError(error);
         return { ok: false, message };
     }
@@ -55,6 +54,7 @@ const buildPrompt = (product: BaseProduct, settings: AppSettings): string => {
     return `
       You are an expert e-commerce data enricher for high-end beauty products.
       Your task is to find and provide detailed, accurate, and well-formatted information for the following product.
+      The output MUST be a single, valid JSON object that adheres to the provided schema.
 
       Product Information:
       - Name: ${product.Name}
@@ -79,45 +79,29 @@ const buildPrompt = (product: BaseProduct, settings: AppSettings): string => {
 };
 
 
-// FIX: Update enrichProductWithGemini to use import.meta.env.VITE_API_KEY for Vite compatibility.
 export const enrichProductWithGemini = async (product: BaseProduct, settings: AppSettings): Promise<Omit<EnrichedProduct, 'id' | 'status'>> => {
-    const apiKey = import.meta.env.VITE_API_KEY;
+    const apiKey = process.env.API_KEY;
     if (!apiKey) {
-        throw new Error("Gemini API Key is not configured. Set VITE_API_KEY in your environment variables.");
+        throw new Error("Gemini API Key is not configured. Set API_KEY in your environment variables.");
     }
     const ai = new GoogleGenAI({ apiKey });
     const prompt = buildPrompt(product, settings);
 
+    // Dynamically build the response schema from settings
+    const properties = settings.productFields.reduce((acc, field) => {
+        let description = "";
+        if (field === 'Image' || field === 'Gallery') {
+            description = "Leave this field empty. Do not source images.";
+        } else if (field === 'Sources') {
+            description = "List the URLs of the sources used, comma-separated.";
+        }
+        acc[field] = { type: Type.STRING, description };
+        return acc;
+    }, {} as Record<string, { type: Type, description?: string }>);
+
     const responseSchema = {
         type: Type.OBJECT,
-        properties: {
-            'Name': { type: Type.STRING },
-            'Size': { type: Type.STRING },
-            'Shade': { type: Type.STRING },
-            'Brand': { type: Type.STRING },
-            'Top Notes': { type: Type.STRING },
-            'Middle Notes': { type: Type.STRING },
-            'Base Notes': { type: Type.STRING },
-            'Fragrance Family': { type: Type.STRING },
-            'Occasion': { type: Type.STRING },
-            'Product Type': { type: Type.STRING },
-            'Gender': { type: Type.STRING },
-            'Intent of Use': { type: Type.STRING },
-            'Finish': { type: Type.STRING },
-            'Consistency': { type: Type.STRING },
-            'Sun Protection': { type: Type.STRING },
-            'How to Apply': { type: Type.STRING },
-            'Skin Type': { type: Type.STRING },
-            'Skincare Concern': { type: Type.STRING },
-            'What it Treats / Solves': { type: Type.STRING },
-            'Key Ingredients': { type: Type.STRING },
-            'Product Category': { type: Type.STRING },
-            'Short Description': { type: Type.STRING },
-            'Detailed Description': { type: Type.STRING },
-            'Image': { type: Type.STRING, description: "Leave this field empty. Do not source images." },
-            'Gallery': { type: Type.STRING, description: "Leave this field empty. Do not source images." },
-            'Sources': { type: Type.STRING, description: "List the URLs of the sources used, comma-separated." }
-        },
+        properties: properties,
     };
 
     try {
@@ -133,9 +117,9 @@ export const enrichProductWithGemini = async (product: BaseProduct, settings: Ap
         const jsonString = (response.text ?? '').trim();
         const enrichedData = JSON.parse(jsonString);
         
-        // Ensure all keys are present, even if AI omits them
+        // Ensure all keys from the schema are present, even if AI omits them
         const finalData = { ...product, ...enrichedData };
-        Object.keys(responseSchema.properties || {}).forEach(key => {
+        settings.productFields.forEach(key => {
             if (!(key in finalData)) {
                 (finalData as any)[key] = "N/A";
             }
@@ -145,7 +129,6 @@ export const enrichProductWithGemini = async (product: BaseProduct, settings: Ap
 
     } catch (error: any) {
         console.error("Error enriching product with Gemini:", error);
-        // FIX: Parse the error to propagate a cleaner, more specific message for better UI feedback.
         const message = parseGeminiError(error);
         throw new Error(message);
     }

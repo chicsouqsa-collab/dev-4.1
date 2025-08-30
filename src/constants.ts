@@ -1,6 +1,5 @@
 
-// FIX: Import EnrichedProduct type to be used in ENRICHED_PRODUCT_COLUMNS.
-import { AiInstruction, AppSettings, EnrichedProduct } from './types';
+import { AiInstruction, AppSettings } from './types';
 
 export const NAV_LINKS = [
   { name: 'Dashboard', path: '/' },
@@ -20,9 +19,17 @@ export const DEFAULT_AI_INSTRUCTIONS: AiInstruction[] = [
     { id: 'VARIATIONS_COMBINATION_LOGIC', tag: '[VARIATIONS_COMBINATION_LOGIC]', label: 'Variations Combination Logic', instruction: 'If multiple rows represent the same product with different shades or sizes, combine them into one. List the different values in their respective fields, separated by commas.' },
 ];
 
+export const DEFAULT_PRODUCT_FIELDS: string[] = [
+    'Name', 'Size', 'Shade', 'Brand', 'Product Type', 'Product Category',
+    'Short Description', 'Detailed Description', 'Key Ingredients', 'How to Apply',
+    'Top Notes', 'Middle Notes', 'Base Notes', 'Fragrance Family', 'Occasion',
+    'Gender', 'Intent of Use', 'Finish', 'Consistency', 'Sun Protection',
+    'Skin Type', 'Skincare Concern', 'What it Treats / Solves', 'Image',
+    'Gallery', 'Sources'
+];
+
 
 export const DEFAULT_SETTINGS: AppSettings = {
-  // FIX: Removed geminiApiKey to enforce using environment variables per Gemini API guidelines.
   normalizationRules: [
     { id: '1', from: 'citrus note', to: 'Citrus' },
     { id: '2', from: 'citrus plant', to: 'Citrus' },
@@ -31,23 +38,14 @@ export const DEFAULT_SETTINGS: AppSettings = {
     { id: '5', from: 'oily skin', to: 'Oily' },
   ],
   aiInstructions: DEFAULT_AI_INSTRUCTIONS,
+  productFields: DEFAULT_PRODUCT_FIELDS,
 };
 
-// FIX: Narrow the type of column keys to string to prevent type errors with React keys and children.
-export const ENRICHED_PRODUCT_COLUMNS: Extract<keyof Omit<EnrichedProduct, 'id' | 'status'>, string>[] = [
-    'Name',
-    'Size',
-    'Shade',
+// These fields will get autocomplete suggestions based on previously saved values.
+export const STANDARDIZABLE_FIELDS: string[] = [
     'Brand',
     'Product Type',
     'Product Category',
-    'Short Description',
-    'Detailed Description',
-    'Key Ingredients',
-    'How to Apply',
-    'Top Notes',
-    'Middle Notes',
-    'Base Notes',
     'Fragrance Family',
     'Occasion',
     'Gender',
@@ -57,8 +55,7 @@ export const ENRICHED_PRODUCT_COLUMNS: Extract<keyof Omit<EnrichedProduct, 'id' 
     'Sun Protection',
     'Skin Type',
     'Skincare Concern',
-    'What it Treats / Solves',
-    'Image',
-    'Gallery',
-    'Sources',
 ];
+
+// Core fields that are part of the base product upload and cannot be removed.
+export const CORE_FIELDS = ['Name', 'Size', 'Shade'];

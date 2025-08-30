@@ -9,27 +9,8 @@ export interface BaseProduct {
 }
 
 export interface EnrichedProduct extends BaseProduct {
-  'Top Notes': string;
-  'Middle Notes': string;
-  'Base Notes': string;
-  'Fragrance Family': string;
-  Occasion: string;
-  Gender: string;
-  'Intent of Use': string;
-  Finish: string;
-  Consistency: string;
-  'Sun Protection': string;
-  'How to Apply': string;
-  'Skin Type': string;
-  'Skincare Concern': string;
-  'What it Treats / Solves': string;
-  'Key Ingredients': string;
-  'Product Category': string;
-  'Short Description': string;
-  'Detailed Description': string;
-  Image: string;
-  Gallery: string;
-  Sources: string;
+  // All other fields are dynamic based on settings
+  [key: string]: any;
   status: 'pending' | 'enriching' | 'enriched' | 'failed';
 }
 
@@ -47,7 +28,18 @@ export interface AiInstruction {
 }
 
 export interface AppSettings {
-  // FIX: Removed geminiApiKey to enforce using environment variables per Gemini API guidelines.
   normalizationRules: NormalizationRule[];
   aiInstructions: AiInstruction[];
+  productFields: string[];
 }
+
+export interface HistoryBatch {
+  id: string;
+  date: string;
+  totalProducts: number;
+  enrichedCount: number;
+  failedCount: number;
+  products: EnrichedProduct[];
+}
+
+export type StandardizedValues = Record<string, string[]>;

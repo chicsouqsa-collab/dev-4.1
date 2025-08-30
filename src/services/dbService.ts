@@ -1,7 +1,12 @@
 
-import { EnrichedProduct } from '../types';
+import { EnrichedProduct, HistoryBatch, StandardizedValues } from '../types';
+import { STANDARDIZABLE_FIELDS } from '../constants';
 
 const DB_KEY = 'productDataLibrary';
+const HISTORY_KEY = 'productEnrichmentHistory';
+const STANDARDIZED_VALUES_KEY = 'standardizedValues';
+
+// --- Data Library ---
 
 const getLibrary = (): EnrichedProduct[] => {
   try {
@@ -64,4 +69,77 @@ export const deleteProductFromLibrary = (productId: string) => {
   let library = getLibrary();
   library = library.filter(p => p.id !== productId);
   saveLibrary(library);
+};
+
+
+// --- History Service ---
+
+export const getHistory = (): HistoryBatch[] => {
+    try {
+        const data = localStorage.getItem(HISTORY_KEY);
+        return data ? JSON.parse(data) : [];
+    } catch (error) {
+        console.error('Failed to parse history from localStorage', error);
+        return [];
+    }
+};
+
+export const saveBatchToHistory = (batch: HistoryBatch) => {
+    try {
+        const history = getHistory();
+        history.unshift(batch); // Add new batch to the beginning
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    } catch (error) {
+        console.error('Failed to save history to localStorage', error);
+    }
+};
+
+export const clearHistory = () => {
+    try {
+        localStorage.removeItem(HISTORY_KEY);
+    } catch (error) {
+        console.error('Failed to clear history from localStorage', error);
+    }
+};
+
+
+// --- Standardized Values Service ---
+
+export const getStandardizedValues = (): StandardizedValues => {
+    try {
+        const data = localStorage.getItem(STANDARDIZED_VALUES_KEY);
+        return data ? JSON.parse(data) : {};
+    } catch (error) {
+        console.error('Failed to parse standardized values from localStorage', error);
+        return {};
+    }
+};
+
+export const updateStandardizedValues = (products: EnrichedProduct[]) => {
+    try {
+        const currentValues = getStandardizedValues();
+        let updated = false;
+
+        products.forEach(product => {
+            STANDARDIZABLE_FIELDS.forEach(field => {
+                const value = product[field];
+                if (value && typeof value === 'string' && value.toLowerCase() !== 'n/a') {
+                    if (!currentValues[field]) {
+                        currentValues[field] = [];
+                    }
+                    if (!currentValues[field].includes(value)) {
+                        currentValues[field].push(value);
+                        currentValues[field].sort();
+                        updated = true;
+                    }
+                }
+            });
+        });
+
+        if (updated) {
+            localStorage.setItem(STANDARDIZED_VALUES_KEY, JSON.stringify(currentValues));
+        }
+    } catch (error) {
+        console.error('Failed to update standardized values in localStorage', error);
+    }
 };

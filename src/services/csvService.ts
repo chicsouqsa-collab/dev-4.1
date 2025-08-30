@@ -49,9 +49,9 @@ const convertToCsvString = (data: any[], columns: string[]): string => {
   return [header, ...rows].join('\n');
 };
 
-export const exportStandardCSV = (products: EnrichedProduct[]) => {
-    const columns = Object.keys(products[0] || {}).filter(k => k !== 'id' && k !== 'status');
-    const csvString = convertToCsvString(products, columns);
+export const exportStandardCSV = (products: EnrichedProduct[], columns: string[]) => {
+    const exportableColumns = columns.filter(k => k !== 'id' && k !== 'status');
+    const csvString = convertToCsvString(products, exportableColumns);
     downloadCSV(csvString, 'enriched-products-standard.csv');
 };
 
