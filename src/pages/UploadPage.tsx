@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useEffect } from 'react';
 import { BaseProduct, EnrichedProduct, AppSettings, HistoryBatch, StandardizedValues } from '../types';
 import { parseCSV, exportStandardCSV, exportWooCommerceCSV } from '../services/csvService';
@@ -197,7 +198,7 @@ const UploadPage: React.FC = () => {
                                                {STANDARDIZABLE_FIELDS.includes(col) ? (
                                                     <AutocompleteInput
                                                         value={product[col] || ''}
-                                                        onChange={(e) => handleUpdateProduct({ ...product, [col]: e.target.value })}
+                                                        onChange={(e) => handleUpdateProduct({ ...product, [col]: e.target.value } as EnrichedProduct)}
                                                         fieldName={col}
                                                         options={standardizedValues[col] || []}
                                                     />
@@ -205,7 +206,7 @@ const UploadPage: React.FC = () => {
                                                     <input 
                                                         type="text" 
                                                         value={product[col] || ''}
-                                                        onChange={(e) => handleUpdateProduct({ ...product, [col]: e.target.value })}
+                                                        onChange={(e) => handleUpdateProduct({ ...product, [col]: e.target.value } as EnrichedProduct)}
                                                         className="w-48 bg-transparent border border-gray-300 dark:border-gray-600 rounded-md p-1 focus:ring-indigo-500 focus:border-indigo-500"
                                                     />
                                                )}
